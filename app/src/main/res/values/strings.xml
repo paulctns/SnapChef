@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">SnapChef</string>
+    <string name="open_camera">Open camera</string>
+    <string name="ingredients_detected">Ingrediente detectate</string>
+    <string name="suggested_recipes">Rețete sugerate</string>
+    <string name="camera_error">Eroare la deschiderea camerei</string>
+    <string name="image_read_error">Eroare la citirea imaginii</string>
+    <string name="network_error">Eroare de rețea</string>
+
+</resources>
