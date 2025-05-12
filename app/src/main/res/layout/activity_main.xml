@@ -13,7 +13,7 @@
         android:scaleType="centerCrop"
         android:src="@drawable/background_veggies"
         android:contentDescription="Background Image"
-        android:alpha="0.75" />
+        android:alpha="0.8" />
 
     <!-- Conținutul principal -->
     <LinearLayout
@@ -42,36 +42,38 @@
                 android:id="@+id/recipeCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="32dp"
                 android:orientation="vertical"
                 android:background="@drawable/message_background"
                 android:padding="16dp"
-                android:elevation="6dp">
+                android:elevation="8dp">
 
                 <TextView
                     android:id="@+id/txtResult"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
                     android:scrollbars="vertical"
-                    android:text="Aici vor apărea rețetele sugerate"
+                    android:text="Te rugăm să încarci o fotografie"
                     android:textSize="16sp"
                     android:textColor="#3A3A3A"
-                    android:lineSpacingExtra="4dp" />
+                    android:lineSpacingExtra="4dp"
+                    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
             </LinearLayout>
 
             <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
+                android:layout_height="220dp"
                 android:layout_below="@id/recipeCard"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
                 android:scaleType="centerCrop"
-                android:background="#FFE4CC" />
+                android:background="@drawable/rounded_image_background"
+                android:elevation="6dp" />
 
             <ImageButton
                 android:id="@+id/cameraButton"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
                 android:layout_margin="24dp"

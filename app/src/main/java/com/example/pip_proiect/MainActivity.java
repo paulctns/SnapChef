@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onResponse(String foodList) {
                             runOnUiThread(() -> txtResult.setText("Alimente detectate:\n" + foodList.trim() + "\n\nSe generează rețetele..."));
 
-                            GeminiHelper.sendTextRequest("Am aceste ingrediente:\n" + foodList.trim() + "\n\nSugerează 3 rețete simple care pot fi preparate cu ele. Pentru fiecare rețetă, oferă: titlul, ingredientele și pașii de preparare.", new GeminiHelper.GeminiCallback() {
+                            GeminiHelper.sendTextRequest("Am aceste ingrediente:\n" + foodList.trim() + "\n\nSugerează 3 rețete simple care pot fi preparate cu ele. Pentru fiecare rețetă, oferă: titlul, ingredientele, valorile nutritionale și pașii de preparare.", new GeminiHelper.GeminiCallback() {
                                 @Override
                                 public void onResponse(String recipes) {
                                     runOnUiThread(() -> {
