@@ -1,5 +1,7 @@
 package com.example.pip_proiect;
 
+import java.util.ArrayList;
+import java.util.List;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -9,6 +11,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -17,10 +21,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import com.google.android.material.navigation.NavigationView;
 
 import org.apache.commons.io.FileUtils;
 
@@ -31,6 +40,7 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final List<RecipeEntry> recipeHistory = new ArrayList<>();
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int REQUEST_PERMISSIONS = 100;
 
@@ -39,16 +49,41 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
     private ImageButton cameraButton;
     private ProgressBar progressBar;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navigationView = findViewById(R.id.navigationView);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close
+        );
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+            Toast.makeText(MainActivity.this, "Ai selectat: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+            drawerLayout.closeDrawers();
+            return true;
+        });
+
         txtResult = findViewById(R.id.txtResult);
         imageView = findViewById(R.id.imageView);
         cameraButton = findViewById(R.id.cameraButton);
         progressBar = findViewById(R.id.progressBar);
+
+        txtResult.setMovementMethod(new android.text.method.ScrollingMovementMethod());
 
         checkAndRequestPermissions();
 
@@ -114,17 +149,41 @@ public class MainActivity extends AppCompatActivity {
             if (imgFile.exists()) {
                 Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                 imageView.setImageBitmap(bitmap);
-                txtResult.setText("Se procesează imaginea...");
+                txtResult.setText("Se identifică alimentele...");
                 progressBar.setVisibility(View.VISIBLE);
 
                 try {
                     byte[] imageBytes = FileUtils.readFileToByteArray(imgFile);
-                    GeminiHelper.sendImageAndTextRequest(imageBytes, "Identifică toate alimentele vizibile în imagine.", new GeminiHelper.GeminiCallback() {
+
+                    GeminiHelper.sendImageAndTextRequest(imageBytes, "Identifică toate alimentele vizibile în imagine. Răspunde doar cu o listă.", new GeminiHelper.GeminiCallback() {
                         @Override
-                        public void onResponse(String result) {
-                            runOnUiThread(() -> {
-                                progressBar.setVisibility(View.GONE);
-                                txtResult.setText(result);
+                        public void onResponse(String foodList) {
+                            runOnUiThread(() -> txtResult.setText("Alimente detectate:\n" + foodList.trim() + "\n\nSe generează rețetele..."));
+
+                            GeminiHelper.sendTextRequest("Am aceste ingrediente:\n" + foodList.trim() + "\n\nSugerează 3 rețete simple care pot fi preparate cu ele. Pentru fiecare rețetă, oferă: titlul, ingredientele și pașii de preparare.", new GeminiHelper.GeminiCallback() {
+                                @Override
+                                public void onResponse(String recipes) {
+                                    runOnUiThread(() -> {
+                                        progressBar.setVisibility(View.GONE);
+
+                                        String ingredientsClean = foodList.trim();
+                                        String recipesClean = recipes.trim();
+                                        txtResult.setText("Alimente detectate:\n" + ingredientsClean + "\n\nRețete posibile:\n" + recipesClean);
+
+                                        RecipeEntry entry = new RecipeEntry(ingredientsClean, recipesClean);
+                                        recipeHistory.add(entry);
+
+                                        updateSidebarMenu();
+                                    });
+                                }
+
+                                @Override
+                                public void onError(String error) {
+                                    runOnUiThread(() -> {
+                                        progressBar.setVisibility(View.GONE);
+                                        txtResult.setText("Eroare la generarea rețetelor: " + error);
+                                    });
+                                }
                             });
                         }
 
@@ -132,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onError(String error) {
                             runOnUiThread(() -> {
                                 progressBar.setVisibility(View.GONE);
-                                txtResult.setText("Eroare Gemini: " + error);
+                                txtResult.setText("Eroare la detectarea alimentelor: " + error);
                             });
                         }
                     });
@@ -143,6 +202,22 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 txtResult.setText("Eroare: fișierul nu există.");
             }
+        }
+    }
+
+    private void updateSidebarMenu() {
+        Menu menu = navigationView.getMenu();
+        menu.clear();
+
+        for (int i = 0; i < recipeHistory.size(); i++) {
+            RecipeEntry entry = recipeHistory.get(i);
+            String title = "Rețeta " + (i + 1);
+            menu.add(title).setOnMenuItemClickListener(item -> {
+                txtResult.setText("Alimente detectate:\n" + entry.getIngredients() +
+                        "\n\nRețete posibile:\n" + entry.getRecipes());
+                drawerLayout.closeDrawers();
+                return true;
+            });
         }
     }
 }

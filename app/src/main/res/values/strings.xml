@@ -6,5 +6,8 @@
     <string name="camera_error">Eroare la deschiderea camerei</string>
     <string name="image_read_error">Eroare la citirea imaginii</string>
     <string name="network_error">Eroare de rețea</string>
+    <string name="navigation_drawer_open">Deschide meniu</string>
+    <string name="navigation_drawer_close">Închide meniu</string>
+
 
 </resources>
