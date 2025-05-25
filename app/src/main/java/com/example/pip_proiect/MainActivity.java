@@ -38,6 +38,20 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * {@code MainActivity} reprezintă activitatea principală a aplicației
+ * <p>
+ * Funcționalitatea principală a aplicației:
+ * <ul>
+ *     <li>Capturarea unei fotografii cu camera dispozitivului.</li>
+ *     <li>Identificarea automată a alimentelor prezente în imagine, folosind API-ul Gemini.</li>
+ *     <li>Generarea automată a unor rețete culinare bazate pe lista de ingrediente detectată.</li>
+ *     <li>Salvarea și accesarea istoriei de rețete generate, printr-un meniu lateral (Navigation Drawer).</li>
+ * </ul>
+ * <p>
+ * Toate cererile către API-ul Gemini sunt efectuate asincron, iar rezultatele
+ * sunt afișate într-un {@link TextView}.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private static final List<RecipeEntry> recipeHistory = new ArrayList<>();
@@ -109,7 +123,10 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSIONS);
         }
     }
-
+    /**
+     * Deschide aplicația Cameră pentru a captura o imagine.
+     * Creează un fișier temporar pentru a stoca imaginea capturată.
+     */
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
@@ -139,7 +156,21 @@ public class MainActivity extends AppCompatActivity {
         currentPhotoPath = image.getAbsolutePath();
         return image;
     }
-
+    /**
+     * Primește rezultatul după capturarea imaginii.
+     * <p>
+     * Dacă imaginea a fost capturată cu succes:
+     * <ul>
+     *     <li>O afișează în ImageView.</li>
+     *     <li>Trimite imaginea la API-ul Gemini pentru identificarea alimentelor.</li>
+     *     <li>Trimite lista ingredientelor detectate pentru generarea de rețete.</li>
+     *     <li>Actualizează meniul lateral cu rețetele generate.</li>
+     * </ul>
+     *
+     * @param requestCode Codul cererii.
+     * @param resultCode  Codul rezultatului.
+     * @param data        Datele returnate (nefolosite aici).
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -204,7 +235,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
+    /**
+     * Actualizează meniul lateral (Navigation Drawer) cu istoricul rețetelor generate.
+     * <p>
+     * Fiecare item din meniu afișează lista de ingrediente și rețetele aferente
+     * când este selectat.
+     */
     private void updateSidebarMenu() {
         Menu menu = navigationView.getMenu();
         menu.clear();
